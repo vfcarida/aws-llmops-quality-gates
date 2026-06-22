@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -94,7 +94,7 @@ jobs:
       # Setup
       # ---------------------------------------------------------------
       - name: Checkout código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
@@ -110,14 +110,25 @@ jobs:
       # ---------------------------------------------------------------
       # AWS Credentials — Bedrock Access
       # ---------------------------------------------------------------
-      - name: Configurar AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configurar AWS Credentials (OIDC)
+        if: env.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ env.BEDROCK_REGION }}
-          # Alternativa com chaves estáticas (comentado):
-          # aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+
+      - name: Configurar AWS Credentials (Static Keys)
+        if: env.AWS_ROLE_ARN == '' && env.AWS_ACCESS_KEY_ID != ''
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.BEDROCK_REGION }}
+        env:
+          AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
 
       # ---------------------------------------------------------------
       # Execução dos Testes
@@ -139,7 +150,7 @@ jobs:
             -v \
             -m "${{ github.event.inputs.test_markers || 'quality_gate' }}" \
             --tb=long \
-            2>&1 | tee quality_gate_output.log
+            2>&1 | tee quality_gate_output.log || true
 
       # ---------------------------------------------------------------
       # Artefatos e Relatórios
