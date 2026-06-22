@@ -86,8 +86,7 @@ class RAGPipelineMock:
         if scenario_id not in self._scenarios:
             available = ", ".join(sorted(self._scenarios.keys()))
             raise KeyError(
-                f"Cenário '{scenario_id}' não encontrado. "
-                f"Disponíveis: {available}"
+                f"Cenário '{scenario_id}' não encontrado. Disponíveis: {available}"
             )
         return self._scenarios[scenario_id]
 
@@ -185,8 +184,7 @@ class RAGPipelineMock:
                 "recuperado. Simula a principal falha silenciosa em RAG."
             ),
             input=(
-                "Qual é a política de preços do Amazon Bedrock para "
-                "modelos foundation?"
+                "Qual é a política de preços do Amazon Bedrock para modelos foundation?"
             ),
             actual_output=(
                 "O Amazon Bedrock oferece preços pay-per-use baseados "
@@ -268,10 +266,7 @@ class RAGPipelineMock:
                 "endpoint SageMaker real-time é de 6 MB."
             ),
             context=[
-                (
-                    "O limite máximo de payload para invocação síncrona é "
-                    "de 6 MB."
-                ),
+                ("O limite máximo de payload para invocação síncrona é de 6 MB."),
             ],
         )
 
@@ -286,9 +281,7 @@ class RAGPipelineMock:
                 "para a pergunta. Apenas um chunk contém a informação "
                 "necessária, diluído entre ruído informacional."
             ),
-            input=(
-                "Como configurar autoscaling para endpoints SageMaker?"
-            ),
+            input=("Como configurar autoscaling para endpoints SageMaker?"),
             actual_output=(
                 "Para configurar autoscaling em endpoints SageMaker, "
                 "você deve registrar o endpoint como um recurso escalável "
@@ -656,10 +649,7 @@ class RAGPipelineMock:
                 "fabricar uma resolução falsa. Edge case crítico em bases "
                 "documentais com versões desatualizadas."
             ),
-            input=(
-                "Qual é o timeout máximo para endpoints SageMaker "
-                "assíncronos?"
-            ),
+            input=("Qual é o timeout máximo para endpoints SageMaker assíncronos?"),
             actual_output=(
                 "De acordo com os dados disponíveis, o timeout máximo "
                 "para endpoints SageMaker assíncronos é de 3600 segundos "
@@ -687,9 +677,6 @@ class RAGPipelineMock:
                     "Endpoints assíncronos do SageMaker possuem timeout "
                     "de 3600 segundos."
                 ),
-                (
-                    "A partir de 2024, o timeout foi aumentado para "
-                    "7200 segundos."
-                ),
+                ("A partir de 2024, o timeout foi aumentado para 7200 segundos."),
             ],
         )

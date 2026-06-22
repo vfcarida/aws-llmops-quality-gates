@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Generator
+from typing import Any, Generator
 
 import pytest
 from deepeval.models import AmazonBedrockModel
@@ -28,6 +28,7 @@ logger = logging.getLogger("rag_quality_gate")
 # =============================================================================
 # AWS BEDROCK — LLM-as-a-Judge Configuration
 # =============================================================================
+
 
 def get_bedrock_judge() -> AmazonBedrockModel:
     """Instancia o modelo Bedrock (Claude) para atuar como juiz.
@@ -69,6 +70,7 @@ def get_bedrock_judge() -> AmazonBedrockModel:
 # FIXTURES
 # =============================================================================
 
+
 @pytest.fixture(scope="session")
 def bedrock_judge() -> AmazonBedrockModel:
     """Fixture de sessão: modelo Bedrock compartilhado entre todos os testes.
@@ -88,6 +90,7 @@ def rag_pipeline() -> RAGPipelineMock:
 # ---------------------------------------------------------------------------
 # Helpers para construção de LLMTestCase a partir de cenários
 # ---------------------------------------------------------------------------
+
 
 def build_test_case(scenario: RAGTestScenario) -> LLMTestCase:
     """Constrói um LLMTestCase do DeepEval a partir de um RAGTestScenario.
@@ -171,8 +174,11 @@ def contradictory_context_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
 # HOOK — Extração de metric.reason para CI/CD Logs
 # =============================================================================
 
+
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Generator:
+def pytest_runtest_makereport(
+    item: pytest.Item, call: pytest.CallInfo[Any]
+) -> Generator[None, None, None]:
     """Hook que captura metric.reason do DeepEval em falhas de teste.
 
     Quando um teste falha, o hook extrai a explicação legível gerada pelo
@@ -182,7 +188,7 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Gener
     A razão da falha é adicionada como uma seção extra no relatório de teste.
     """
     outcome = yield
-    report = outcome.get_result()
+    report = outcome.get_result()  # type: ignore[attr-defined]
 
     if report.when == "call" and report.failed:
         # Tenta extrair informações de métrica da mensagem de erro
@@ -207,11 +213,11 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> Gener
 
             # Adiciona a razão como seção extra no relatório
             extra_info = (
-                f"\n{'='*60}\n"
+                f"\n{'=' * 60}\n"
                 f"🚨 QUALITY GATE FAILURE DETAILS\n"
-                f"{'='*60}\n"
+                f"{'=' * 60}\n"
                 f"Test: {item.name}\n"
                 f"Error: {error_message}\n"
-                f"{'='*60}\n"
+                f"{'=' * 60}\n"
             )
             report.sections.append(("Quality Gate Failure", extra_info))

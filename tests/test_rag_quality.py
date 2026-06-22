@@ -52,6 +52,7 @@ logger = logging.getLogger("rag_quality_gate")
 # HELPER — Log de resultado da métrica
 # =============================================================================
 
+
 def _log_metric_result(metric_name: str, metric: object) -> None:
     """Loga o score e reason de uma métrica para observabilidade CI/CD.
 
