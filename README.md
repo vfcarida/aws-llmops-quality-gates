@@ -12,7 +12,7 @@
 
 <br>
 
-> Uma suíte programática de testes unitários que implementa uma arquitetura **LLM-as-a-Judge** utilizando Amazon Bedrock (Claude) para atuar como um **Quality Gate** estrito. Esta esteira previne regressões de qualidade, forçando *build breaks* automatizados se detectar alucinações, evasões ou falhas de recuperação semântica antes que os artefatos alcancem o ambiente de produção.
+> Uma suíte programática de testes unitários que implementa uma arquitetura **LLM-as-a-Judge** utilizando Amazon Bedrock (Claude) para atuar como um **Quality Gate** estrito. Esta esteira previne regressões de qualidade, forçando *build breaks* automatizados caso detecte alucinações, evasões ou falhas de recuperação semântica antes que os artefatos alcancem o ambiente de produção.
 
 ---
 
@@ -31,11 +31,11 @@
 
 ## ✨ Principais Recursos
 
-- **Validação Nível Produção:** Abandone *vibe checks*. Execute avaliações determinísticas em CI/CD baseadas na "Tríade do RAG" (Context, Faithfulness, Relevance).
-- **Amazon Bedrock Integrado:** Utiliza LLMs state-of-art da AWS (como Anthropic Claude 3.5 Sonnet) como juízes implacáveis, mantendo os dados na sua VPC.
-- **10 Cenários Comportamentais RAG Mockados:** Desde *happy paths* até *edge cases* avançados como "Semantic Drift" e "Entity Swaps" simulando falhas reais no AWS SageMaker.
-- **Integração Pytest Nativa:** A suíte suporta features do ecossistema Pytest (marcadores de categoria, paralelismo, relatórios de falhas extraídos nativamente).
-- **Segurança e Viés (Safety Gates):** Filtros binários que vetam imediatamente toxicidade e quebras de tom.
+- **Validação em Nível de Produção:** Abandone os `vibe checks`. Execute avaliações determinísticas em CI/CD baseadas na "Tríade do RAG" (*Contextual Precision*, *Faithfulness* e *Answer Relevancy*).
+- **Amazon Bedrock Integrado:** Utiliza LLMs *state-of-the-art* da AWS (como o Anthropic Claude 3.5 Sonnet) como juízes implacáveis, mantendo a privacidade e segurança dos dados sob a governança da sua conta AWS.
+- **10 Cenários Comportamentais RAG Simulados:** Desde *happy paths* até casos de borda (*edge cases*) avançados (como *Semantic Drift* e *Entity Swaps*), simulando falhas reais que podem ocorrer em endpoints do AWS SageMaker.
+- **Integração Nativa com Pytest:** A suíte suporta recursos nativos do ecossistema `pytest` (marcadores personalizados, execução paralela e geração de relatórios de falhas extraídos programaticamente).
+- **Segurança e Alinhamento (Safety Gates):** Filtros binários que vetam imediatamente comportamentos inadequados, como toxicidade e viés cognitivo/comportamental.
 
 ---
 
@@ -79,20 +79,20 @@ flowchart TB
 Foram implementados 14 testes estritos, projetados para garantir os pilares da qualidade generativa.
 
 > [!IMPORTANT]
-> **Thresholds (Limiares)**: Os limites estão configurados de forma agressiva (0.85 — 0.90) para o padrão *enterprise*. Ajuste-os caso a taxa de "Falso Positivo" bloqueie excessivamente a esteira inicial.
+> **Thresholds (Limiares)**: Os limites estão configurados de forma agressiva (0.85 — 0.90) para o padrão *enterprise*. Ajuste-os caso a taxa de falsos positivos bloqueie excessivamente a esteira em fases iniciais de desenvolvimento.
 
 ### 📌 Tríade do RAG
 | Categoria | ID | Métrica (DeepEval) | 🎯 Objetivo | Limiar |
 |-----------|----|--------------------|-------------|:---:|
-| **Faithfulness** | `FAITH-01` a `03` | `FaithfulnessMetric` | Valida ancoragem factual. Puni fatos alucinados e troca de entidades. | `>= 0.85` |
+| **Faithfulness** | `FAITH-01` a `03` | `FaithfulnessMetric` | Valida ancoragem factual. Pune fatos alucinados e a troca de entidades. | `>= 0.85` |
 | **Answer Relevance** | `RELEV-01` a `03` | `AnswerRelevancyMetric` | Penaliza respostas evasivas, genéricas ou fora de tópico. | `>= 0.85` |
-| **Context Precision**| `PREC-01` a `03` | `ContextualPrecisionMetric` | Avalia o ranqueamento do *Vector Database*. Ruído dilui a pontuação. | `>= 0.85` |
+| **Context Precision**| `PREC-01` a `03` | `ContextualPrecisionMetric` | Avalia o ranqueamento dos documentos no *Vector Database*. A presença de ruído dilui a pontuação. | `>= 0.85` |
 
 ### 📌 Métricas Complementares
 | Categoria | ID | Métrica (DeepEval) | 🎯 Objetivo | Limiar |
 |-----------|----|--------------------|-------------|:---:|
 | **Context Recall** | `RECALL-01` a `02` | `ContextualRecallMetric` | O recuperador trouxe toda a base necessária? Detecta gaps informacionais. | `>= 0.85` |
-| **Safety / Viés** | `SAFE-01` a `02` | `Toxicity` / `Bias` | Análise binária (Pass/Fail) para segurança corporativa. | `>= 0.85` |
+| **Safety / Viés** | `SAFE-01` a `02` | `ToxicityMetric` / `BiasMetric` | Análise binária (Pass/Fail) para segurança corporativa. | `>= 0.85` |
 | **Context Relevancy**| `CTX-REL-01` | `ContextualRelevancyMetric` | Densidade informacional. Penaliza chunks desnecessariamente massivos. | `>= 0.85` |
 
 ---
@@ -102,11 +102,11 @@ Foram implementados 14 testes estritos, projetados para garantir os pilares da q
 ```text
 aws-llmops-quality-gates/
 ├── .github/workflows/
-│   └── rag-quality-gate.yml    # Pipeline GitHub Actions c/ suporte OIDC Bedrock
+│   └── rag-quality-gate.yml    # Pipeline GitHub Actions com suporte a OIDC e Bedrock
 ├── src/
 │   └── rag_pipeline_mock.py    # Wrapper simulando respostas e falhas do SageMaker
 ├── tests/
-│   ├── conftest.py             # Fixtures Pytest, Init do Amazon Bedrock e Logs
+│   ├── conftest.py             # Fixtures Pytest, inicialização do Amazon Bedrock e logs
 │   └── test_rag_quality.py     # As 14 Asserções de Qualidade
 ├── pytest.ini                  # Configurações de marcadores e caminhos
 ├── requirements.txt            # Dependências com Lock
@@ -121,7 +121,7 @@ aws-llmops-quality-gates/
 
 - **Python**: Versão `3.9` ou superior.
 - **AWS Account**: Acesso programático configurado.
-- **Model Access**: Verifique se a sua conta tem o acesso liberado para os modelos no [Amazon Bedrock Console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html).
+- **Model Access**: Verifique se a sua conta possui acesso habilitado aos modelos no [Amazon Bedrock Console](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html).
 
 ### 2. Instalação Básica
 
@@ -130,28 +130,41 @@ aws-llmops-quality-gates/
 python -m venv .venv
 source .venv/bin/activate  # Ou .venv\Scripts\activate no Windows
 
-# Instale os requerimentos do projeto
+# Instale as dependências do projeto
 pip install -r requirements.txt
 ```
 
 ### 3. Autenticação AWS
 
-Os testes utilizam o SDK Boto3 para invocar o Bedrock silenciosamente. Utilize o AWS CLI para injetar suas credenciais temporárias ou estáticas:
+Os testes utilizam o SDK `boto3` para realizar as chamadas ao Amazon Bedrock. Configure suas credenciais da AWS utilizando uma das abordagens a seguir:
 
+**No Linux/macOS (Bash):**
 ```bash
-# Opção recomendada:
+# Opção recomendada (SSO/IAM Identity Center):
 aws configure sso --profile seu-perfil-sso
 export AWS_PROFILE=seu-perfil-sso
 
-# Opção estática (Apenas para Dev):
+# Opção estática:
 export AWS_ACCESS_KEY_ID="sua_chave"
 export AWS_SECRET_ACCESS_KEY="seu_segredo"
 export AWS_DEFAULT_REGION="us-east-1"
 ```
 
+**No Windows (PowerShell):**
+```powershell
+# Opção recomendada (SSO/IAM Identity Center):
+aws configure sso --profile seu-perfil-sso
+$env:AWS_PROFILE="seu-perfil-sso"
+
+# Opção estática:
+$env:AWS_ACCESS_KEY_ID="sua_chave"
+$env:AWS_SECRET_ACCESS_KEY="seu_segredo"
+$env:AWS_DEFAULT_REGION="us-east-1"
+```
+
 ### 4. Executando o Quality Gate
 
-Você pode executar utilizando o CLI nativo do DeepEval (recomendado, pois gera logs consolidados), ou pelo Pytest tradicional:
+Você pode executar utilizando a CLI nativa do DeepEval (recomendado, pois gera logs consolidados), ou pelo `pytest` tradicional:
 
 ```bash
 # Executa todos os testes e exibe os motivos (.reason) no final
@@ -164,8 +177,9 @@ pytest tests/test_rag_quality.py -m "rag_triad" -v
 ```
 
 > [!TIP]
-> Por padrão, o framework invoca o `anthropic.claude-3-5-sonnet-20241022-v2:0`. Para trocar de modelo avaliador na sua máquina, utilize as variáveis:
-> `export BEDROCK_MODEL_ID="anthropic.claude-3-haiku-20240307-v1:0"`
+> Por padrão, o framework utiliza o modelo `anthropic.claude-3-5-sonnet-20241022-v2:0`. Para alterar o modelo juiz, configure a variável de ambiente `BEDROCK_MODEL_ID`:
+> - No Linux/macOS: `export BEDROCK_MODEL_ID="anthropic.claude-3-haiku-20240307-v1:0"`
+> - No Windows (PowerShell): `$env:BEDROCK_MODEL_ID="anthropic.claude-3-haiku-20240307-v1:0"`
 
 ---
 
@@ -173,16 +187,16 @@ pytest tests/test_rag_quality.py -m "rag_triad" -v
 
 O repositório já inclui um arquivo `.github/workflows/rag-quality-gate.yml` altamente parametrizado.
 
-### Configurando o Repositório:
+### Configuração de Segredos e Variáveis no GitHub:
 
-Para o pipeline do GitHub funcionar, você precisará preencher um de dois padrões de credenciais em **Settings > Secrets and variables > Actions**:
+Para viabilizar a execução automática no GitHub Actions, configure as credenciais de acesso à AWS em **Settings > Secrets and variables > Actions** utilizando uma das seguintes abordagens:
 
-**Opção 1 (Melhor Prática - OIDC Role)**:
-- `AWS_ROLE_ARN`: Forneça o ARN da Role do IAM com permissões para o Bedrock.
+**Abordagem 1: Provedor de Identidade OIDC (Recomendada/Segura)**
+- `AWS_ROLE_ARN`: O ARN da Role IAM configurada para estabelecer relação de confiança com o GitHub OIDC.
 
-**Opção 2 (Chaves Estáticas - Fallback)**:
-- `AWS_ACCESS_KEY_ID`: Sua chave.
-- `AWS_SECRET_ACCESS_KEY`: Seu segredo.
+**Abordagem 2: Credenciais Estáticas do IAM (Alternativa)**
+- `AWS_ACCESS_KEY_ID`: A Access Key da sua conta de serviço IAM.
+- `AWS_SECRET_ACCESS_KEY`: A Secret Key correspondente.
 
 ### Comentário Automatizado no Pull Request
 
@@ -228,11 +242,5 @@ Isso significa que desenhamos dados defeituosos e forçamos os limites do Avalia
 Esta arquitetura serve como a base fundacional do projeto `huggingface-sagemaker-workshop-series`. Conforme a aplicação RAG escalar, recomenda-se:
 
 1. **Adversarial Prompt Injection:** Inserir métricas do DeepEval focadas em injeção de prompt quebrando a *system message*.
-2. **Avaliações em Lote Diárias:** Agendar o Workflow (CRON) para avaliar o modelo recém-treinado no S3 contra um "Golden Dataset" de 100 perguntas antes que o MLOps Engineers façam deploy para STG.
+2. **Avaliações em Lote Diárias:** Agendar o Workflow (CRON) para avaliar o modelo recém-treinado no S3 contra um "Golden Dataset" de 100 perguntas antes que os MLOps Engineers façam deploy para STG.
 3. **Observabilidade (Confident AI / Phoenix):** Exportar os traces e scores do Bedrock para uma interface de Telemetria centralizada.
-
----
-
-<div align="center">
-  <p>Feito com ❤️ pela equipe MLOps/AI QA.</p>
-</div>
