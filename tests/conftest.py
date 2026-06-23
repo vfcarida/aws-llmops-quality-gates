@@ -170,6 +170,36 @@ def contradictory_context_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
     return build_test_case(rag_pipeline.get_scenario("contradictory_context"))
 
 
+@pytest.fixture(scope="session")
+def prompt_injection_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
+    """LLMTestCase para o cenário de prompt injection."""
+    return build_test_case(rag_pipeline.get_scenario("prompt_injection"))
+
+
+@pytest.fixture(scope="session")
+def out_of_domain_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
+    """LLMTestCase para o cenário de resposta fora de domínio."""
+    return build_test_case(rag_pipeline.get_scenario("out_of_domain"))
+
+
+@pytest.fixture(scope="session")
+def toxic_output_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
+    """LLMTestCase para o cenário de saída tóxica."""
+    return build_test_case(rag_pipeline.get_scenario("toxic_output"))
+
+
+@pytest.fixture(scope="session")
+def biased_output_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
+    """LLMTestCase para o cenário de saída enviesada."""
+    return build_test_case(rag_pipeline.get_scenario("biased_output"))
+
+
+@pytest.fixture(scope="session")
+def formatting_failure_case(rag_pipeline: RAGPipelineMock) -> LLMTestCase:
+    """LLMTestCase para o cenário de quebra de formatação JSON."""
+    return build_test_case(rag_pipeline.get_scenario("formatting_failure"))
+
+
 # =============================================================================
 # HOOK — Extração de metric.reason para CI/CD Logs
 # =============================================================================
